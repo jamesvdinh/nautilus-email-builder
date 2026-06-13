@@ -81,7 +81,13 @@ function renderComponent(item: ContentItem, zones: Record<string, ContentItem[]>
     case "EmailImage": {
       const src = escapeHtml(String(props.src ?? ""));
       const alt = escapeHtml(String(props.alt ?? ""));
-      return `<div style="text-align:center;padding:8px 0;"><img src="${src}" alt="${alt}" style="max-width:100%;display:block;margin:0 auto;" /></div>`;
+      const width = Number(props.width ?? 600);
+      const height = Number(props.height ?? 200);
+      const href = props.href ? escapeHtml(String(props.href)) : "";
+      // Email clients need plain <img> — next/image URLs won't work in inboxes
+      const img = `<img src="${src}" alt="${alt}" width="${width}" height="${height}" style="max-width:100%;height:auto;display:block;margin:0 auto;" />`;
+      const inner = href ? `<a href="${href}">${img}</a>` : img;
+      return `<div style="text-align:center;padding:8px 0;">${inner}</div>`;
     }
 
     case "EmailDivider": {

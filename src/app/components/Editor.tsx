@@ -2,12 +2,27 @@
 
 import { DropZone, Puck, type Data } from "@puckeditor/core";
 import "@puckeditor/core/puck.css";
+import Image from "next/image";
 
 // ── Color picker ─────────────────────────────────────────────────────────────
 
 const PRESET_COLORS = [
-  "#000000", "#111827", "#374151", "#6b7280", "#9ca3af", "#d1d5db", "#f3f4f6", "#ffffff",
-  "#ef4444", "#f97316", "#eab308", "#22c55e", "#3b82f6", "#8b5cf6", "#ec4899", "#14b8a6",
+  "#000000",
+  "#111827",
+  "#374151",
+  "#6b7280",
+  "#9ca3af",
+  "#d1d5db",
+  "#f3f4f6",
+  "#ffffff",
+  "#ef4444",
+  "#f97316",
+  "#eab308",
+  "#22c55e",
+  "#3b82f6",
+  "#8b5cf6",
+  "#ec4899",
+  "#14b8a6",
 ];
 
 function ColorPicker({
@@ -75,9 +90,13 @@ function ColorPicker({
 
 const colorField = {
   type: "custom" as const,
-  render: ({ value, onChange }: { value: string; onChange: (v: string) => void }) => (
-    <ColorPicker value={value} onChange={onChange} />
-  ),
+  render: ({
+    value,
+    onChange,
+  }: {
+    value: string;
+    onChange: (v: string) => void;
+  }) => <ColorPicker value={value} onChange={onChange} />,
 };
 
 // ── Shared typography field options ──────────────────────────────────────────
@@ -204,7 +223,11 @@ const emailConfig = {
         fontWeight: string;
       }) => {
         const Tag = level;
-        const sizes: Record<string, string> = { h1: "2rem", h2: "1.5rem", h3: "1.25rem" };
+        const sizes: Record<string, string> = {
+          h1: "2rem",
+          h2: "1.5rem",
+          h3: "1.25rem",
+        };
         return (
           <div style={{ padding: "8px 16px" }}>
             <Tag
@@ -242,7 +265,10 @@ const emailConfig = {
         fontFamily: fontFamilyField,
         fontWeight: fontWeightField,
         lineHeight: { type: "number" as const, label: "Line Height" },
-        letterSpacing: { type: "number" as const, label: "Letter Spacing (px)" },
+        letterSpacing: {
+          type: "number" as const,
+          label: "Letter Spacing (px)",
+        },
       },
       defaultProps: {
         text: "Your email content goes here. Write something compelling.",
@@ -297,21 +323,53 @@ const emailConfig = {
       fields: {
         src: { type: "text" as const, label: "Image URL" },
         alt: { type: "text" as const, label: "Alt Text" },
+        width: { type: "number" as const, label: "Width (px)" },
+        height: { type: "number" as const, label: "Height (px)" },
+        href: { type: "text" as const, label: "Link URL (optional)" },
       },
       defaultProps: {
         src: "https://placehold.co/600x200/e2e8f0/94a3b8?text=Image",
         alt: "Email image",
+        width: 600,
+        height: 200,
+        href: "",
       },
-      render: ({ src, alt }: { src: string; alt: string }) => (
-        <div style={{ textAlign: "center", padding: "8px 16px" }}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
+      render: ({
+        src,
+        alt,
+        width,
+        height,
+        href,
+      }: {
+        src: string;
+        alt: string;
+        width: number;
+        height: number;
+        href: string;
+      }) => {
+        const img = (
+          // unoptimized: bypasses /_next/image proxying so arbitrary
+          // external URLs work without whitelisting domains in next.config
+          <Image
             src={src}
             alt={alt}
-            style={{ maxWidth: "100%", display: "block", margin: "0 auto" }}
+            width={width}
+            height={height}
+            unoptimized
+            style={{
+              maxWidth: "100%",
+              height: "auto",
+              display: "block",
+              margin: "0 auto",
+            }}
           />
-        </div>
-      ),
+        );
+        return (
+          <div style={{ textAlign: "center", padding: "8px 16px" }}>
+            {href ? <a href={href}>{img}</a> : img}
+          </div>
+        );
+      },
     },
 
     EmailContainer: {
@@ -354,7 +412,10 @@ const emailConfig = {
       fields: {
         backgroundColor: { ...colorField, label: "Background Color" },
         paddingTop: { type: "number" as const, label: "Padding Top (px)" },
-        paddingBottom: { type: "number" as const, label: "Padding Bottom (px)" },
+        paddingBottom: {
+          type: "number" as const,
+          label: "Padding Bottom (px)",
+        },
         paddingLeft: { type: "number" as const, label: "Padding Left (px)" },
         paddingRight: { type: "number" as const, label: "Padding Right (px)" },
         borderRadius: { type: "number" as const, label: "Border Radius (px)" },
@@ -407,7 +468,14 @@ const emailConfig = {
       },
       render: ({ color }: { color: string }) => (
         <div style={{ padding: "8px 16px" }}>
-          <hr style={{ borderColor: color, borderTopWidth: 1, borderStyle: "solid", margin: 0 }} />
+          <hr
+            style={{
+              borderColor: color,
+              borderTopWidth: 1,
+              borderStyle: "solid",
+              margin: 0,
+            }}
+          />
         </div>
       ),
     },
