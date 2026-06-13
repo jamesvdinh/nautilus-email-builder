@@ -50,16 +50,24 @@ function renderComponent(item: ContentItem, zones: Record<string, ContentItem[]>
       const level = String(props.level ?? "h1");
       const align = String(props.align ?? "center");
       const color = escapeHtml(String(props.color ?? "#111827"));
+      const fontFamily = escapeHtml(String(props.fontFamily ?? "Arial, Helvetica, sans-serif"));
+      const fontWeight = String(props.fontWeight ?? "700");
       const sizes: Record<string, string> = { h1: "2rem", h2: "1.5rem", h3: "1.25rem" };
       const size = sizes[level] ?? "2rem";
-      return `<${level} style="text-align:${align};color:${color};font-size:${size};margin:0;padding:8px 0;font-family:sans-serif;">${text}</${level}>`;
+      return `<${level} style="text-align:${align};color:${color};font-size:${size};font-family:${fontFamily};font-weight:${fontWeight};margin:0;padding:8px 0;">${text}</${level}>`;
     }
 
     case "EmailText": {
       const text = escapeHtml(String(props.text ?? ""));
       const align = String(props.align ?? "left");
       const color = escapeHtml(String(props.color ?? "#374151"));
-      return `<p style="text-align:${align};color:${color};margin:8px 0;line-height:1.6;font-family:sans-serif;font-size:15px;">${text}</p>`;
+      const fontSize = Number(props.size ?? 15);
+      const fontFamily = escapeHtml(String(props.fontFamily ?? "Arial, Helvetica, sans-serif"));
+      const fontWeight = String(props.fontWeight ?? "400");
+      const lineHeight = Number(props.lineHeight ?? 1.6);
+      const letterSpacing = Number(props.letterSpacing ?? 0);
+      const letterSpacingStyle = letterSpacing ? `letter-spacing:${letterSpacing}px;` : "";
+      return `<p style="text-align:${align};color:${color};margin:8px 0;font-size:${fontSize}px;font-family:${fontFamily};font-weight:${fontWeight};line-height:${lineHeight};${letterSpacingStyle}">${text}</p>`;
     }
 
     case "EmailButton": {

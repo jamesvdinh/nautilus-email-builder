@@ -3,15 +3,118 @@
 import { DropZone, Puck, type Data } from "@puckeditor/core";
 import "@puckeditor/core/puck.css";
 
+// ── Color picker ─────────────────────────────────────────────────────────────
+
+const PRESET_COLORS = [
+  "#000000", "#111827", "#374151", "#6b7280", "#9ca3af", "#d1d5db", "#f3f4f6", "#ffffff",
+  "#ef4444", "#f97316", "#eab308", "#22c55e", "#3b82f6", "#8b5cf6", "#ec4899", "#14b8a6",
+];
+
+function ColorPicker({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+}) {
+  const current = value || "#000000";
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
+        {PRESET_COLORS.map((c) => (
+          <button
+            key={c}
+            type="button"
+            title={c}
+            onClick={() => onChange(c)}
+            style={{
+              width: 22,
+              height: 22,
+              backgroundColor: c,
+              border: current === c ? "2px solid #3b82f6" : "1px solid #d1d5db",
+              borderRadius: 4,
+              cursor: "pointer",
+              padding: 0,
+              flexShrink: 0,
+            }}
+          />
+        ))}
+      </div>
+      <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+        <input
+          type="color"
+          value={current}
+          onChange={(e) => onChange(e.target.value)}
+          style={{
+            width: 32,
+            height: 32,
+            padding: 2,
+            border: "1px solid #d1d5db",
+            borderRadius: 4,
+            cursor: "pointer",
+            flexShrink: 0,
+          }}
+        />
+        <input
+          type="text"
+          value={current}
+          onChange={(e) => onChange(e.target.value)}
+          style={{
+            flex: 1,
+            padding: "4px 8px",
+            fontSize: 12,
+            fontFamily: "monospace",
+            border: "1px solid #d1d5db",
+            borderRadius: 4,
+          }}
+        />
+      </div>
+    </div>
+  );
+}
+
+const colorField = {
+  type: "custom" as const,
+  render: ({ value, onChange }: { value: string; onChange: (v: string) => void }) => (
+    <ColorPicker value={value} onChange={onChange} />
+  ),
+};
+
+// ── Shared typography field options ──────────────────────────────────────────
+
+const fontFamilyField = {
+  type: "select" as const,
+  label: "Font Family",
+  options: [
+    { label: "Sans-serif", value: "Arial, Helvetica, sans-serif" },
+    { label: "Serif", value: "Georgia, 'Times New Roman', serif" },
+    { label: "Monospace", value: "'Courier New', Courier, monospace" },
+    { label: "System UI", value: "system-ui, -apple-system, sans-serif" },
+  ],
+};
+
+const fontWeightField = {
+  type: "select" as const,
+  label: "Weight",
+  options: [
+    { label: "Regular", value: "400" },
+    { label: "Medium", value: "500" },
+    { label: "Semibold", value: "600" },
+    { label: "Bold", value: "700" },
+  ],
+};
+
+// ── Component config ─────────────────────────────────────────────────────────
+
 const emailConfig = {
   components: {
     EmailButton: {
       label: "Button",
       fields: {
-        text: { type: "text", label: "Button Text" },
-        href: { type: "text", label: "Link URL" },
-        backgroundColor: { type: "text", label: "Background Color" },
-        textColor: { type: "text", label: "Text Color" },
+        text: { type: "text" as const, label: "Button Text" },
+        href: { type: "text" as const, label: "Link URL" },
+        backgroundColor: { ...colorField, label: "Background Color" },
+        textColor: { ...colorField, label: "Text Color" },
       },
       defaultProps: {
         text: "Click Here",
@@ -54,9 +157,9 @@ const emailConfig = {
     EmailHeading: {
       label: "Heading",
       fields: {
-        text: { type: "text", label: "Text" },
+        text: { type: "text" as const, label: "Text" },
         level: {
-          type: "select",
+          type: "select" as const,
           label: "Level",
           options: [
             { label: "H1", value: "h1" },
@@ -65,7 +168,7 @@ const emailConfig = {
           ],
         },
         align: {
-          type: "select",
+          type: "select" as const,
           label: "Alignment",
           options: [
             { label: "Left", value: "left" },
@@ -73,31 +176,35 @@ const emailConfig = {
             { label: "Right", value: "right" },
           ],
         },
-        color: { type: "text", label: "Color (hex)" },
+        color: { ...colorField, label: "Color" },
+        fontFamily: fontFamilyField,
+        fontWeight: fontWeightField,
       },
       defaultProps: {
         text: "Your Heading",
         level: "h1",
         align: "center",
         color: "#111827",
+        fontFamily: "Arial, Helvetica, sans-serif",
+        fontWeight: "700",
       },
       render: ({
         text,
         level,
         align,
         color,
+        fontFamily,
+        fontWeight,
       }: {
         text: string;
         level: "h1" | "h2" | "h3";
         align: string;
         color: string;
+        fontFamily: string;
+        fontWeight: string;
       }) => {
         const Tag = level;
-        const sizes: Record<string, string> = {
-          h1: "2rem",
-          h2: "1.5rem",
-          h3: "1.25rem",
-        };
+        const sizes: Record<string, string> = { h1: "2rem", h2: "1.5rem", h3: "1.25rem" };
         return (
           <div style={{ padding: "8px 16px" }}>
             <Tag
@@ -106,7 +213,8 @@ const emailConfig = {
                 color,
                 fontSize: sizes[level],
                 margin: 0,
-                fontFamily: "sans-serif",
+                fontFamily,
+                fontWeight,
               }}
             >
               {text}
@@ -119,9 +227,10 @@ const emailConfig = {
     EmailText: {
       label: "Text",
       fields: {
-        text: { type: "text", label: "Content" },
+        text: { type: "text" as const, label: "Content" },
+        size: { type: "number" as const, label: "Font Size (px)" },
         align: {
-          type: "select",
+          type: "select" as const,
           label: "Alignment",
           options: [
             { label: "Left", value: "left" },
@@ -129,21 +238,40 @@ const emailConfig = {
             { label: "Right", value: "right" },
           ],
         },
-        color: { type: "text", label: "Color (hex)" },
+        color: { ...colorField, label: "Color" },
+        fontFamily: fontFamilyField,
+        fontWeight: fontWeightField,
+        lineHeight: { type: "number" as const, label: "Line Height" },
+        letterSpacing: { type: "number" as const, label: "Letter Spacing (px)" },
       },
       defaultProps: {
         text: "Your email content goes here. Write something compelling.",
+        size: 15,
         align: "left",
         color: "#374151",
+        fontFamily: "Arial, Helvetica, sans-serif",
+        fontWeight: "400",
+        lineHeight: 1.6,
+        letterSpacing: 0,
       },
       render: ({
         text,
+        size,
         align,
         color,
+        fontFamily,
+        fontWeight,
+        lineHeight,
+        letterSpacing,
       }: {
         text: string;
+        size: number;
         align: string;
         color: string;
+        fontFamily: string;
+        fontWeight: string;
+        lineHeight: number;
+        letterSpacing: number;
       }) => (
         <div style={{ padding: "4px 16px" }}>
           <p
@@ -151,9 +279,11 @@ const emailConfig = {
               textAlign: align as "left" | "center" | "right",
               color,
               margin: 0,
-              lineHeight: 1.6,
-              fontFamily: "sans-serif",
-              fontSize: "15px",
+              fontSize: size,
+              fontFamily,
+              fontWeight,
+              lineHeight,
+              letterSpacing: letterSpacing ? `${letterSpacing}px` : undefined,
             }}
           >
             {text}
@@ -165,8 +295,8 @@ const emailConfig = {
     EmailImage: {
       label: "Image",
       fields: {
-        src: { type: "text", label: "Image URL" },
-        alt: { type: "text", label: "Alt Text" },
+        src: { type: "text" as const, label: "Image URL" },
+        alt: { type: "text" as const, label: "Alt Text" },
       },
       defaultProps: {
         src: "https://placehold.co/600x200/e2e8f0/94a3b8?text=Image",
@@ -187,9 +317,9 @@ const emailConfig = {
     EmailContainer: {
       label: "Container",
       fields: {
-        backgroundColor: { type: "text", label: "Background Color" },
-        padding: { type: "number", label: "Padding (px)" },
-        maxWidth: { type: "number", label: "Max Width (px)" },
+        backgroundColor: { ...colorField, label: "Background Color" },
+        padding: { type: "number" as const, label: "Padding (px)" },
+        maxWidth: { type: "number" as const, label: "Max Width (px)" },
       },
       defaultProps: {
         backgroundColor: "#ffffff",
@@ -222,12 +352,12 @@ const emailConfig = {
     EmailSection: {
       label: "Section",
       fields: {
-        backgroundColor: { type: "text", label: "Background Color" },
-        paddingTop: { type: "number", label: "Padding Top (px)" },
-        paddingBottom: { type: "number", label: "Padding Bottom (px)" },
-        paddingLeft: { type: "number", label: "Padding Left (px)" },
-        paddingRight: { type: "number", label: "Padding Right (px)" },
-        borderRadius: { type: "number", label: "Border Radius (px)" },
+        backgroundColor: { ...colorField, label: "Background Color" },
+        paddingTop: { type: "number" as const, label: "Padding Top (px)" },
+        paddingBottom: { type: "number" as const, label: "Padding Bottom (px)" },
+        paddingLeft: { type: "number" as const, label: "Padding Left (px)" },
+        paddingRight: { type: "number" as const, label: "Padding Right (px)" },
+        borderRadius: { type: "number" as const, label: "Border Radius (px)" },
       },
       defaultProps: {
         backgroundColor: "transparent",
@@ -270,21 +400,14 @@ const emailConfig = {
     EmailDivider: {
       label: "Divider",
       fields: {
-        color: { type: "text", label: "Color (hex)" },
+        color: { ...colorField, label: "Color" },
       },
       defaultProps: {
         color: "#e5e7eb",
       },
       render: ({ color }: { color: string }) => (
         <div style={{ padding: "8px 16px" }}>
-          <hr
-            style={{
-              borderColor: color,
-              borderTopWidth: 1,
-              borderStyle: "solid",
-              margin: 0,
-            }}
-          />
+          <hr style={{ borderColor: color, borderTopWidth: 1, borderStyle: "solid", margin: 0 }} />
         </div>
       ),
     },
@@ -292,7 +415,7 @@ const emailConfig = {
     EmailSpacer: {
       label: "Spacer",
       fields: {
-        height: { type: "number", label: "Height (px)" },
+        height: { type: "number" as const, label: "Height (px)" },
       },
       defaultProps: {
         height: 32,
