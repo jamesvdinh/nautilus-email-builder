@@ -324,37 +324,31 @@ const emailConfig = {
         src: { type: "text" as const, label: "Image URL" },
         alt: { type: "text" as const, label: "Alt Text" },
         width: { type: "number" as const, label: "Width (px)" },
-        height: { type: "number" as const, label: "Height (px)" },
         href: { type: "text" as const, label: "Link URL (optional)" },
       },
       defaultProps: {
         src: "https://placehold.co/600x200/e2e8f0/94a3b8?text=Image",
         alt: "Email image",
         width: 600,
-        height: 200,
         href: "",
       },
       render: ({
         src,
         alt,
         width,
-        height,
         href,
       }: {
         src: string;
         alt: string;
         width: number;
-        height: number;
         href: string;
       }) => {
         const img = (
-          // unoptimized: bypasses /_next/image proxying so arbitrary
-          // external URLs work without whitelisting domains in next.config
           <Image
             src={src}
             alt={alt}
             width={width}
-            height={height}
+            height={200}
             unoptimized
             style={{
               maxWidth: "100%",
