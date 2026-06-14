@@ -1,8 +1,12 @@
 "use client";
 
-import { DropZone, Puck, type Data } from "@puckeditor/core";
+import { DropZone, Puck, usePuck, type Data } from "@puckeditor/core";
 import "@puckeditor/core/puck.css";
 import Image from "next/image";
+import { useEffect, useState } from "react";
+import { loadDraft, saveDraft } from "@/app/lib/draft";
+
+const DRAFT_KEY = "nautilus:email-draft";
 
 // ── Color picker ─────────────────────────────────────────────────────────────
 
@@ -491,16 +495,61 @@ const emailConfig = {
 
 export type EmailData = Data;
 
+// Rendered inside Puck's context so it can call usePuck() to read current data
+function SaveDraftButton() {
+  const { appState } = usePuck();
+  const [label, setLabel] = useState<"Save Draft" | "Saved!">("Save Draft");
+
+  function handleSave() {
+    saveDraft(DRAFT_KEY, appState.data);
+    setLabel("Saved!");
+    setTimeout(() => setLabel("Save Draft"), 2000);
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={handleSave}
+      style={{
+        padding: "6px 14px",
+        fontSize: 13,
+        fontWeight: 500,
+        border: "1px solid #d1d5db",
+        borderRadius: 6,
+        background: label === "Saved!" ? "#f0fdf4" : "#ffffff",
+        color: label === "Saved!" ? "#16a34a" : "#374151",
+        cursor: "pointer",
+        transition: "all 0.15s",
+      }}
+    >
+      {label}
+    </button>
+  );
+}
+
 interface EditorProps {
   onPublish: (data: Data) => void;
   initialData?: Data;
 }
 
 export function Editor({ onPublish, initialData }: EditorProps) {
-  const defaultData: Data = initialData ?? {
-    content: [],
-    root: { props: {} },
-  };
+  const [draft, setDraft] = useState<Data | null>(null);
+  const [hydrated, setHydrated] = useState(false);
+
+  // localStorage is browser-only — read after mount to avoid SSR mismatch
+  useEffect(() => {
+    // eslint-disable-next-line
+    setDraft(loadDraft<Data>(DRAFT_KEY));
+    setHydrated(true);
+  }, []);
+
+  if (!hydrated) return null;
+
+  const defaultData: Data = draft ??
+    initialData ?? {
+      content: [],
+      root: { props: {} },
+    };
 
   return (
     <Puck
@@ -508,6 +557,14 @@ export function Editor({ onPublish, initialData }: EditorProps) {
       config={emailConfig as any}
       data={defaultData}
       onPublish={onPublish}
+      overrides={{
+        headerActions: ({ children }) => (
+          <>
+            {children}
+            <SaveDraftButton />
+          </>
+        ),
+      }}
     />
   );
 }
