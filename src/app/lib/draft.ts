@@ -3,6 +3,7 @@ export function saveDraft(key: string, data: unknown): void {
     localStorage.setItem(key, JSON.stringify(data));
   } catch {
     // quota exceeded or private browsing — fail silently
+    console.error("Quota exceeded or private browsing");
   }
 }
 
@@ -19,6 +20,6 @@ export function clearDraft(key: string): void {
   try {
     localStorage.removeItem(key);
   } catch {
-    // ignore
+    console.error("Failed to clear local storage variables");
   }
 }

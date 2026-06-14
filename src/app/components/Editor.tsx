@@ -4,7 +4,7 @@ import { DropZone, Puck, usePuck, type Data } from "@puckeditor/core";
 import "@puckeditor/core/puck.css";
 import Image from "next/image";
 import { useEffect, useState } from "react";
-import { loadDraft, saveDraft } from "@/app/lib/draft";
+import { clearDraft, loadDraft, saveDraft } from "@/app/lib/draft";
 
 const DRAFT_KEY = "nautilus:email-draft";
 
@@ -527,6 +527,39 @@ function SaveDraftButton() {
   );
 }
 
+function ResetButton() {
+  const { dispatch } = usePuck();
+
+  function handleReset() {
+    if (!window.confirm("Clear the editor and delete your saved draft?")) return;
+    clearDraft(DRAFT_KEY);
+    dispatch({
+      type: "setData",
+      data: { content: [], root: { props: {} } },
+    });
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={handleReset}
+      style={{
+        padding: "6px 14px",
+        fontSize: 13,
+        fontWeight: 500,
+        border: "1px solid #fca5a5",
+        borderRadius: 6,
+        background: "#fff",
+        color: "#dc2626",
+        cursor: "pointer",
+        transition: "all 0.15s",
+      }}
+    >
+      Reset
+    </button>
+  );
+}
+
 interface EditorProps {
   onPublish: (data: Data) => void;
   initialData?: Data;
@@ -561,6 +594,7 @@ export function Editor({ onPublish, initialData }: EditorProps) {
         headerActions: ({ children }) => (
           <>
             {children}
+            <ResetButton />
             <SaveDraftButton />
           </>
         ),
