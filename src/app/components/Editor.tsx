@@ -1,6 +1,13 @@
 "use client";
 
-import { DropZone, Puck, usePuck, type Data } from "@puckeditor/core";
+import {
+  DropZone,
+  Puck,
+  usePuck,
+  type Config,
+  type CustomField,
+  type Data,
+} from "@puckeditor/core";
 import "@puckeditor/core/puck.css";
 import Image from "next/image";
 import { useEffect, useState } from "react";
@@ -92,15 +99,11 @@ function ColorPicker({
   );
 }
 
-const colorField = {
-  type: "custom" as const,
-  render: ({
-    value,
-    onChange,
-  }: {
-    value: string;
-    onChange: (v: string) => void;
-  }) => <ColorPicker value={value} onChange={onChange} />,
+const colorField: CustomField<string> = {
+  type: "custom",
+  render: ({ value, onChange }) => (
+    <ColorPicker value={value} onChange={onChange} />
+  ),
 };
 
 // ── Shared typography field options ──────────────────────────────────────────
@@ -128,6 +131,49 @@ const fontWeightField = {
 };
 
 // ── Component config ─────────────────────────────────────────────────────────
+
+type EmailComponents = {
+  EmailButton: {
+    text: string;
+    href: string;
+    backgroundColor: string;
+    textColor: string;
+  };
+  EmailHeading: {
+    text: string;
+    level: "h1" | "h2" | "h3";
+    align: string;
+    color: string;
+    fontFamily: string;
+    fontWeight: string;
+  };
+  EmailText: {
+    text: string;
+    size: number;
+    align: string;
+    color: string;
+    fontFamily: string;
+    fontWeight: string;
+    lineHeight: number;
+    letterSpacing: number;
+  };
+  EmailImage: { src: string; alt: string; width: number; href: string };
+  EmailContainer: {
+    backgroundColor: string;
+    padding: number;
+    maxWidth: number;
+  };
+  EmailSection: {
+    backgroundColor: string;
+    paddingTop: number;
+    paddingBottom: number;
+    paddingLeft: number;
+    paddingRight: number;
+    borderRadius: number;
+  };
+  EmailDivider: { color: string };
+  EmailSpacer: { height: number };
+};
 
 const emailConfig = {
   components: {
@@ -491,7 +537,7 @@ const emailConfig = {
       ),
     },
   },
-};
+} satisfies Config<EmailComponents>;
 
 export type EmailData = Data;
 
@@ -531,7 +577,8 @@ function ResetButton() {
   const { dispatch } = usePuck();
 
   function handleReset() {
-    if (!window.confirm("Clear the editor and delete your saved draft?")) return;
+    if (!window.confirm("Clear the editor and delete your saved draft?"))
+      return;
     clearDraft(DRAFT_KEY);
     dispatch({
       type: "setData",
@@ -571,7 +618,6 @@ export function Editor({ onPublish, initialData }: EditorProps) {
 
   // localStorage is browser-only — read after mount to avoid SSR mismatch
   useEffect(() => {
-    // eslint-disable-next-line
     setDraft(loadDraft<Data>(DRAFT_KEY));
     setHydrated(true);
   }, []);
@@ -586,8 +632,7 @@ export function Editor({ onPublish, initialData }: EditorProps) {
 
   return (
     <Puck
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      config={emailConfig as any}
+      config={emailConfig as Config<EmailComponents>}
       data={defaultData}
       onPublish={onPublish}
       overrides={{

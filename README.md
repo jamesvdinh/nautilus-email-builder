@@ -104,6 +104,9 @@ temporal server start-dev
 ## Time Spent
 
 <!-- Track your time here -->
+Total time spent: ~5 hrs
+- 30 mins: setup boilerplate Puck + React Email editor
+- 
 
 ## Resources
 
